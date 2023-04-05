@@ -2688,19 +2688,35 @@ exports.default = _default;
 
 /***/ }),
 
-/***/ 258:
+/***/ 382:
 /***/ ((module) => {
 
-let wait = function (milliseconds) {
-  return new Promise((resolve) => {
-    if (typeof milliseconds !== 'number') {
-      throw new Error('milliseconds not a number');
+let parse = function (body) {
+  const toCamelCase = (str) => str.replace(/[^a-zA-Z0-9\s]/g, '')
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => index === 0 ? word.toLowerCase() : word.toUpperCase())
+    .replace(/\s+/g, '');
+
+  const sections = body.match(/### .+?\n\n.+?(?=\n###|$)/gs) || [];
+
+  return sections.reduce((acc, section) => {
+    const keyMatch = section.match(/### (.+?)\n/);
+    const key = keyMatch ? toCamelCase(keyMatch[1]) : '';
+
+    const hasCheckboxes = section.includes('[X]') || section.includes('[ ]');
+    if (hasCheckboxes) {
+      const items = section.match(/- \[[X ]\] .+\n/g) || [];
+      acc[key] = items.map(s => ({
+        item: s.match(/- \[[X ]\] (.+)/)[1],
+        selected: s.includes('[X]')
+      }));
+    } else {
+      acc[key] = section.replace(/### .+?\n\n/, '').trim();
     }
-    setTimeout(() => resolve("done!"), milliseconds)
-  });
+    return acc;
+  }, {});
 };
 
-module.exports = wait;
+module.exports = parse;
 
 
 /***/ }),
@@ -2835,27 +2851,17 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const core = __nccwpck_require__(186);
-const wait = __nccwpck_require__(258);
+const parse = __nccwpck_require__(382);
 
-
-// most @actions toolkit packages have async methods
-async function run() {
+function run() {
   try {
-    const ms = core.getInput('milliseconds');
-    core.info(`Waiting ${ms} milliseconds ...`);
-
-    core.debug((new Date()).toTimeString()); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-    await wait(parseInt(ms));
-    core.info((new Date()).toTimeString());
-
-    core.setOutput('time', new Date().toTimeString());
+    const body = core.getInput('body');
+    core.setOutput('json', parse(body));
   } catch (error) {
     core.setFailed(error.message);
   }
 }
-
 run();
-
 })();
 
 module.exports = __webpack_exports__;
