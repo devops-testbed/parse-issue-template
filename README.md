@@ -1,7 +1,7 @@
-# Create a JavaScript Action
+# Parse Issue Template
 
 <p align="center">
-  <a href="https://github.com/actions/javascript-action/actions"><img alt="javscript-action status" src="https://github.com/actions/javascript-action/workflows/units-test/badge.svg"></a>
+  <a href="https://github.com/devops-testbed/parse-issue-template/actions"><img alt="javscript-action status" src="https://github.com/devops-testbed/parse-issue-template/workflows/units-test/badge.svg"></a>
 </p>
 
 Use this template to bootstrap the creation of a JavaScript action.:rocket:
@@ -34,35 +34,6 @@ $ npm test
 ...
 ```
 
-## Change action.yml
-
-The action.yml defines the inputs and output for your action.
-
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-const core = require('@actions/core');
-...
-
-async function run() {
-  try {
-      ...
-  }
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run()
-```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
 
 ## Package for distribution
 
@@ -108,9 +79,20 @@ See the [versioning documentation](https://github.com/actions/toolkit/blob/maste
 You can now consume the action by referencing the v1 branch
 
 ```yaml
-uses: actions/javascript-action@v1
-with:
-  milliseconds: 1000
+
+#on: repository_dispatch
+- name: parse issue
+  uses: devops-testbed/parse-issue-template@c42ca5e2a7133cbd690fab87ea27c417cf580986 # pin to sha
+  id: issue-parser
+  with:
+    body: ${{ github.event.client_payload.github.payload.issue.body }}
+    
+#on: issues
+- name: check inputs
+  uses: devops-testbed/parse-issue-template@c42ca5e2a7133cbd690fab87ea27c417cf580986
+  id: issue-parser
+  with:
+    body: ${{ github.event.issue.body }}
 ```
 
-See the [actions tab](https://github.com/actions/javascript-action/actions) for runs of this action! :rocket:
+See the [actions tab](https://github.com/devops-testbed/parse-issue-template) for runs of this action! :rocket:
