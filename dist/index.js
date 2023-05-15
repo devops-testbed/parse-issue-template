@@ -2695,6 +2695,11 @@ let parse = function (body) {
   const toCamelCase = (str) => str.replace(/[^a-zA-Z0-9\s]/g, '')
     .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => index === 0 ? word.toLowerCase() : word.toUpperCase())
     .replace(/\s+/g, '');
+ 
+ // Use regular expression to format input string with two newline characters between each line and remove leading and trailing whitespace from each line.
+  const regex = /^\s*(.*)\s*$/gm;
+  const replacement = "\n\n$1";
+  body = body.replace(regex, replacement);
 
   const sections = body.match(/### .+?\n\n.+?(?=\n###|$)/gs) || [];
 
